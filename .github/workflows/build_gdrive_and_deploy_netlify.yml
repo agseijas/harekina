@@ -1,0 +1,49 @@
+name: Build Static Site from Google Drive
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      LANG:
+        description: 'Language to use for the static site'
+        required: true
+        default: 'es'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-site:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup Google credentials
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_IN_BASE64 }}" | base64 -d > credentials.json
+
+      - name: Build static site
+        env:
+          DRIVE_PARENT_FOLDER: ${{ secrets.DRIVE_PARENT_FOLDER }}
+        run: npm run generate
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: npx --yes netlify-cli deploy --prod --dir=./site  # Update the directory if your build output differs

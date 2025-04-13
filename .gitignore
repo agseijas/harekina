@@ -1,3 +1,9 @@
+site
+
+credentials.json
+
+local_drive
+
 # Logs
 logs
 *.log

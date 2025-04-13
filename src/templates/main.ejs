@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js"
+    integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1"
+    crossorigin="anonymous"></script>
+  <title>
+    <%= title %>
+  </title>
+  <%- include('partials/analytics') %>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/all.css">
+</head>
+
+<body>
+  <template id="overlayTemplate">
+    <div class="overlay">
+      <div class="overlay-cardback">
+        <p>
+          <strong><%= description %>:</strong><br/>
+          <span class="overlay-description"></span>
+        </p>
+        <p>
+          <strong><%= age %>:</strong>
+          <span class="overlay-age"></span>
+        </p>
+        <p>
+          <strong><%= status %>:</strong>
+          <span class="overlay-status"></span>
+        </p>
+      </div>
+      <a href="knowme.html" class="overlay-knowme">
+        <%= knowme %>
+      </a>
+    </div>
+  </template>
+  <div id="jsonData" style="display: none;">
+    <%= pets %>
+  </div>
+
+  <%- include('partials/header') %>
+
+  <div class="text-header">
+    <%- presentation %>
+  </div>
+
+  <h1>
+    <%= title %>
+  </h1>
+
+  <div class="grid" id="cardContainer">
+    <% pets.forEach(function(item) { %>
+      <div class="card" data-pet='<%= JSON.stringify(item) %>'>
+        <img src="./images/<%= item.folderName %>/<%= item.thumbnail %>" alt="<%= item.title %>" style="width:100%;">
+        <h3>
+          <%= item.title %>
+        </h3>
+      </div>
+      <% }); %>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Parse the hidden JSON data
+      var container = document.getElementById('cardContainer');
+      var overlayTemplate = document.getElementById('overlayTemplate');
+
+      // Create an overlay from the template and append it to the card
+      function createOverlay(card) {
+
+        if (card.querySelector('.overlay')) return;
+
+        var clone = overlayTemplate.content.cloneNode(true);
+        var overlay = clone.querySelector('.overlay');
+
+        overlay.querySelector('.overlay-description').innerText = card.pet.description;
+        overlay.querySelector('.overlay-age').innerText = getAge(card.pet.birthdate); // Display age with one decimal
+        overlay.querySelector('.overlay-status').innerText = card.pet.status;
+        overlay.querySelector('.overlay-knowme').href = `${card.pet.normalizedName}_${card.pet.knowme}.html`;
+
+        card.appendChild(overlay);
+      }
+
+      function getAge(birthdateString) {
+        var birthdate = new Date(birthdateString);
+        var today = new Date();
+        var age = (today - birthdate) / (1000 * 60 * 60 * 24 * 365.25); // Convert milliseconds to years
+        return age.toFixed(1); // Display age with one decimal
+      }
+
+      function removeOverlay(card) {
+        var overlay = card.querySelector('.overlay');
+        if (overlay) {
+          overlay.remove();
+        }
+      }
+
+      function handleMouseEnter() {
+        this.pet = JSON.parse(this.getAttribute('data-pet'));
+        createOverlay(this);
+      }
+
+      function handleMouseLeave() {
+        if (!this.classList.contains('persistent')) {
+          removeOverlay(this);
+        }
+      }
+
+      function handleClick(e) {
+        // Prevent click from triggering any parent handlers
+        e.stopPropagation();
+        if (this.classList.contains('persistent')) {
+          this.classList.remove('persistent');
+          removeOverlay(this);
+        } else {
+          this.classList.add('persistent');
+          createOverlay(this);
+        }
+      }
+
+      container.querySelectorAll('.card').forEach(function (card) {
+        card.addEventListener('mouseenter', handleMouseEnter);
+        card.addEventListener('mouseleave', handleMouseLeave);
+        card.addEventListener('click', handleClick);
+      });
+
+      document.body.addEventListener('click', function (e) {
+        document.querySelectorAll('.card.persistent').forEach(function (card) {
+          if (!card.contains(e.target)) {
+            card.classList.remove('persistent');
+            removeOverlay(card);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
