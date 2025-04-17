@@ -87,6 +87,7 @@ export const TEXTS: { [key: string]: TranslatedTitles } = {
           <li><a href="${CONTACT_ADDRESSES.donations.teaming}" target="_blank">Donando 1 €urogatito al mes para el santuario</a><br /></li>
           <li><a href="${CONTACT_ADDRESSES.donations.teaming_other}" target="_blank">Donando 1 €urogatito al mes para los rescates de GFAM</a><br /></li>
           <li><a href="${CONTACT_ADDRESSES.donations.amazon_wishlist}" target="_blank">Enviando comida mediante nuestra Amazon Wishlist</a><br /></li>
+          <li>Haciendo una donación puntual a nuestra cuenta: ES3400730100560505884140<br/></li>
         </ul>
         `,
       whatsapp: '¿Preparados? Escribidnos por Whatsapp',
